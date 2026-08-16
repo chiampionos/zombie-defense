@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zombie Defense V4</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <canvas id="menu-canvas" width="960" height="720"></canvas>
+    <canvas id="game-canvas" width="960" height="720" style="display:none"></canvas>
+
+    <div id="shop-panel" style="display:none">
+        <div id="shop-title"></div>
+        <div id="shop-items"></div>
+        <button id="shop-close" onclick="closeShop()">BACK</button>
+    </div>
+
+    <div id="settings-panel" style="display:none">
+        <div id="settings-title">SETTINGS</div>
+        <div id="settings-content">
+            <label><input type="checkbox" id="music-toggle" onchange="toggleMusic()"> Music On/Off</label>
+        </div>
+        <button class="shop-close-btn" onclick="closeShop()">BACK</button>
+    </div>
+
+    <div id="game-ui" style="display:none">
+        <div id="health-bar">
+            <div id="health-fill"></div>
+            <span id="health-text">100</span>
+        </div>
+        <div id="armor-bar" style="display:none">
+            <div id="armor-fill"></div>
+            <span id="armor-text">0</span>
+        </div>
+        <div id="info-row">
+            <span id="ammo-display">Ammo: <span id="ammo-count">15</span>/<span id="ammo-max">15</span></span>
+            <span id="wave-display">Wave: <span id="wave-num">1</span>/16</span>
+            <span id="score-display">Kills: <span id="kill-count">0</span></span>
+            <span id="money-display" class="game-money">$<span id="money-count">0</span></span>
+            <span id="tower-display" style="color:#9b59b6">Towers:<span id="tower-count">0</span></span>
+            <span id="wall-display" style="color:#e67e22">Walls:<span id="wall-count">0</span></span>
+        </div>
+        <div id="gun-row">
+            <span class="gun-slot active">1:Pistol</span>
+            <span class="gun-slot">2:Shotgun</span>
+            <span class="gun-slot">3:SMG</span>
+            <span class="gun-slot">4:Rifle</span>
+        </div>
+        <div id="build-row">
+            <span class="build-slot" data-key="Q">Q:Wall $20</span>
+            <span class="build-slot" data-key="E">E:Gate $30</span>
+            <span class="build-slot" data-key="T">T:Turret $50</span>
+            <span class="build-slot" data-key="Y">Y:Flame $80</span>
+            <span class="build-slot" data-key="U">U:Sniper $100</span>
+            <span class="build-slot" data-key="I">I:Tesla $120</span>
+            <span class="build-slot" data-key="O">O:Watch $150</span>
+        </div>
+        <div id="carl-status" style="display:none">Carl 1: <span id="carl1-hp">400</span>HP | Carl 2: <span id="carl2-hp">--</span>HP</div>
+        <div id="pause-hint">P/ESC:Pause | B:Backpack | X:Car</div>
+        <div id="map-name"></div>
+    </div>
+
+    <div id="car-hint" style="display:none">X: Enter Car</div>
+    <div id="car-health" style="display:none">
+        <div id="car-health-bar"><div id="car-health-fill"></div></div>
+        <span id="car-health-text" style="font-size:10px;color:#e74c3c"></span>
+    </div>
+    <div id="reload-bar" style="display:none"><div id="reload-fill"></div><span>Reloading...</span></div>
+    <div id="backpack-panel" style="display:none">
+        <div id="backpack-title">BACKPACK</div>
+        <div id="backpack-items"></div>
+        <div id="backpack-close">B to close</div>
+    </div>
+    <div id="message"></div>
+
+    <script src="game.js"></script>
+</body>
+</html>
