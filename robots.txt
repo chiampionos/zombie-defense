@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://chiampionos.github.io/zombie-defense/sitemap.xml

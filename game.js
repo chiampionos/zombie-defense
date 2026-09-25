@@ -61,6 +61,16 @@ var guns = [
     { name: 'Rifle', fireRate: 40, damage: 80, spread: 0, bullets: 1, ammo: 5, reloadTime: 90, bulletSpeed: 16 }
 ];
 
+var weaponSets = {
+    pistol:   { guns: [0, 1],          grenades: 0 },
+    swat_set: { guns: [2, 1],          grenades: 4 },
+    riot_set: { guns: [3, 2, 0],       grenades: 6 }
+};
+
+var playerGuns = [0, 1];
+
+function getGun() { return guns[playerGuns[gameState.currentGun]]; }
+
 var towerTypes = {
     turret: { cost: 50, range: 160, damage: 15, fireRate: 30, health: 200, color: '#9b59b6' },
     flame: { cost: 80, range: 80, damage: 5, fireRate: 4, health: 150, color: '#e74c3c', aoe: 50 },
@@ -473,7 +483,7 @@ canvas.addEventListener('mousedown', function(e) { e.preventDefault(); mouse.dow
 canvas.addEventListener('mouseup', function() { mouse.down = false; });
 canvas.addEventListener('contextmenu', function(e) { e.preventDefault(); });
 
-function switchGun(idx) { if (idx === gameState.currentGun || gameState.buildMode > 0) return; gameState.currentGun = idx; var g = guns[idx]; player.ammo = g.ammo; player.maxAmmo = g.ammo; player.reloading = false; player.reloadTimer = 0; document.querySelectorAll('.gun-slot').forEach(function(el, i) { el.className = i === idx ? 'gun-slot active' : 'gun-slot'; }); document.getElementById('reload-bar').style.display = 'none'; updateUI(); }
+function switchGun(idx) { if (idx < 0 || idx >= playerGuns.length || idx === gameState.currentGun || gameState.buildMode > 0) return; gameState.currentGun = idx; var g = getGun(); player.ammo = g.ammo; player.maxAmmo = g.ammo; player.reloading = false; player.reloadTimer = 0; document.querySelectorAll('.gun-slot').forEach(function(el, i) { el.className = i === idx ? 'gun-slot active' : 'gun-slot'; }); document.getElementById('reload-bar').style.display = 'none'; updateUI(); }
 function switchBuild(idx) {
     if (idx >= 4 && idx <= 7) {
         var unlockIds = { 4: 'unlock_flame', 5: 'unlock_sniper', 6: 'unlock_tesla', 7: 'unlock_watch' };
@@ -486,13 +496,13 @@ function togglePause() { if (!gameState.running || gameState.gameOver) return; g
 function toggleBackpack() { if (!gameState.running || gameState.gameOver || gameState.paused) return; gameState.openBackpack = !gameState.openBackpack; document.getElementById('backpack-panel').style.display = gameState.openBackpack ? 'block' : 'none'; if (gameState.openBackpack) updateBackpackUI(); }
 function updateBackpackUI() { var items = document.getElementById('backpack-items'); var html = ''; if (backpack.medkits > 0) html += '<div class="bp-item"><span class="bp-name">Medkit (H)</span><span class="bp-count">x' + backpack.medkits + '</span></div>'; if (backpack.ammoPacks > 0) html += '<div class="bp-item"><span class="bp-name">Ammo (J)</span><span class="bp-count">x' + backpack.ammoPacks + '</span></div>'; if (backpack.grenades > 0) html += '<div class="bp-item"><span class="bp-name">Grenade (G)</span><span class="bp-count">x' + backpack.grenades + '</span></div>'; if (!html) html = '<div style="color:#888;text-align:center;padding:15px">Empty</div>'; items.innerHTML = html; }
 function useMedkit() { if (backpack.medkits <= 0 || player.health >= player.maxHealth) return; backpack.medkits--; player.health = Math.min(player.health + 40, player.maxHealth); updateUI(); }
-function useAmmoPack() { if (backpack.ammoPacks <= 0) return; backpack.ammoPacks--; player.ammo = guns[gameState.currentGun].ammo; player.reloading = false; player.reloadTimer = 0; document.getElementById('reload-bar').style.display = 'none'; updateUI(); }
+function useAmmoPack() { if (backpack.ammoPacks <= 0) return; backpack.ammoPacks--; player.ammo = getGun().ammo; player.reloading = false; player.reloadTimer = 0; document.getElementById('reload-bar').style.display = 'none'; updateUI(); }
 function useGrenade() { if (backpack.grenades <= 0) return; backpack.grenades--; var a = Math.atan2(mouse.y - player.y, mouse.x - player.x); addExplosion(player.x + Math.cos(a) * 100, player.y + Math.sin(a) * 100, 120, 100); updateUI(); }
 function breakStructure() { var mx = mouse.x, my = mouse.y; for (var i = walls.length - 1; i >= 0; i--) { if (dist({x:mx,y:my}, walls[i]) < 25 && dist(player, walls[i]) < 80) { gameState.money += 10; walls.splice(i, 1); updateUI(); return; } } for (var i = gates.length - 1; i >= 0; i--) { if (dist({x:mx,y:my}, gates[i]) < 25 && dist(player, gates[i]) < 80) { gameState.money += 15; gates.splice(i, 1); updateUI(); return; } } }
 
 function shoot() {
     if (player.reloading || gameState.fireTimer > 0) return;
-    var g = guns[gameState.currentGun];
+    var g = getGun();
     if (player.ammo <= 0) { startReload(); return; }
     player.ammo--; gameState.fireTimer = g.fireRate; updateUI();
     var baseAngle = Math.atan2(mouse.y - player.y, mouse.x - player.x);
@@ -500,7 +510,7 @@ function shoot() {
     if (mouse.down && g.fireRate < 12) setTimeout(function() { if (mouse.down && gameState.running && !gameState.paused) shoot(); }, g.fireRate * 16);
 }
 
-function startReload() { if (player.reloading) return; var g = guns[gameState.currentGun]; if (player.ammo === g.ammo) return; player.reloading = true; player.reloadTimer = g.reloadTime; document.getElementById('reload-bar').style.display = 'block'; }
+function startReload() { if (player.reloading) return; var g = getGun(); if (player.ammo === g.ammo) return; player.reloading = true; player.reloadTimer = g.reloadTime; document.getElementById('reload-bar').style.display = 'block'; }
 
 function placeBuildable() {
     var tx = Math.floor(mouse.x / TILE), ty = Math.floor(mouse.y / TILE);
@@ -548,7 +558,7 @@ function addExplosion(x, y, radius, damage) { explosions.push({ x:x, y:y, radius
 function update() {
     if (!gameState.running || gameState.gameOver || gameState.paused || gameState.inMenu) return;
     if (gameState.fireTimer > 0) gameState.fireTimer--;
-    if (player.reloading) { player.reloadTimer--; var g = guns[gameState.currentGun]; document.getElementById('reload-fill').style.width = ((1 - player.reloadTimer / g.reloadTime) * 100) + '%'; if (player.reloadTimer <= 0) { player.ammo = g.ammo; player.maxAmmo = g.ammo; player.reloading = false; document.getElementById('reload-bar').style.display = 'none'; updateUI(); } }
+    if (player.reloading) { player.reloadTimer--; var g = getGun(); document.getElementById('reload-fill').style.width = ((1 - player.reloadTimer / g.reloadTime) * 100) + '%'; if (player.reloadTimer <= 0) { player.ammo = g.ammo; player.maxAmmo = g.ammo; player.reloading = false; document.getElementById('reload-bar').style.display = 'none'; updateUI(); } }
 
     if (!player.inCar) {
         var dx = 0, dy = 0;
@@ -635,7 +645,7 @@ function update() {
     if (carls.length === 0) document.getElementById('carl-status').style.display = 'none';
 
     for (var i = explosions.length - 1; i >= 0; i--) { explosions[i].life--; explosions[i].radius += 3; if (explosions[i].life <= 0) explosions.splice(i, 1); }
-    for (var i = pickups.length - 1; i >= 0; i--) { if (dist(player, pickups[i]) < 20) { if (pickups[i].type === 'health') player.health = Math.min(player.health + 25, player.maxHealth); else if (pickups[i].type === 'ammo') player.ammo = Math.min(player.ammo + 10, guns[gameState.currentGun].ammo); else gameState.money += 15; pickups.splice(i, 1); updateUI(); } }
+    for (var i = pickups.length - 1; i >= 0; i--) { if (dist(player, pickups[i]) < 20) { if (pickups[i].type === 'health') player.health = Math.min(player.health + 25, player.maxHealth); else if (pickups[i].type === 'ammo') player.ammo = Math.min(player.ammo + 10, getGun().ammo); else gameState.money += 15; pickups.splice(i, 1); updateUI(); } }
 
     // Acid
     for (var i = acidBalls.length - 1; i >= 0; i--) { var a = acidBalls[i]; a.x += a.vx; a.y += a.vy; a.life--; if (a.life <= 0) { acidBalls.splice(i, 1); continue; } if (dist(a, player) < 15 && !player.inCar) { player.health -= 12; acidBalls.splice(i, 1); updateUI(); if (player.health <= 0) { endGame(false); return; } } }
@@ -679,7 +689,7 @@ function updateUI() {
     document.getElementById('health-text').textContent = Math.max(0, player.health);
     if (player.armor > 0) { document.getElementById('armor-bar').style.display = 'block'; document.getElementById('armor-fill').style.width = (player.armor / 100 * 100) + '%'; document.getElementById('armor-text').textContent = player.armor; } else document.getElementById('armor-bar').style.display = 'none';
     document.getElementById('ammo-count').textContent = player.ammo;
-    document.getElementById('ammo-max').textContent = guns[gameState.currentGun].ammo;
+    document.getElementById('ammo-max').textContent = getGun().ammo;
     document.getElementById('kill-count').textContent = gameState.kills;
     document.getElementById('money-count').textContent = gameState.money;
     var tc = document.getElementById('tower-count'); if (tc) tc.textContent = towers.length;
@@ -723,16 +733,19 @@ function startGameFromMenu() {
 
     var vs = { car: { speed: CAR_SPEED, health: 300, damage: CAR_DAMAGE, isTank: false }, jeep: { speed: CAR_SPEED*1.3, health: 350, damage: CAR_DAMAGE, isTank: false }, humvee: { speed: CAR_SPEED*0.9, health: 500, damage: CAR_DAMAGE*1.2, isTank: false }, tank: { speed: CAR_SPEED*0.4, health: 800, damage: CAR_DAMAGE*2, isTank: true }, ifv: { speed: CAR_SPEED*1.2, health: 600, damage: CAR_DAMAGE*1.5, isTank: false }, howitzer: { speed: CAR_SPEED*0.5, health: 700, damage: CAR_DAMAGE*3, isTank: true }, rocket_truck: { speed: CAR_SPEED*0.7, health: 500, damage: CAR_DAMAGE*4, isTank: false } }[playerData.equippedVehicle] || { speed: CAR_SPEED, health: 300, damage: CAR_DAMAGE, isTank: false };
 
+    var ws = weaponSets[playerData.equippedWeapon] || weaponSets.pistol;
+    playerGuns = ws.guns.slice();
+
     gameState.running = true; gameState.wave = 1; gameState.kills = 0; gameState.money = 0;
     gameState.gameOver = false; gameState.won = false; gameState.currentGun = 0; gameState.fireTimer = 0;
     gameState.waveActive = false; gameState.waveDelay = 60; gameState.buildMode = 0; gameState.paused = false;
 
     player.health = 100 + armorHp; player.maxHealth = 100 + armorHp; player.armor = armorHp;
-    player.ammo = 15; player.maxAmmo = 15; player.inCar = false; player.reloading = false;
+    player.ammo = getGun().ammo; player.maxAmmo = getGun().ammo; player.inCar = false; player.reloading = false;
     car.active = true; car.occupied = false;
     car.speed = vs.speed; car.health = vs.health; car.maxHealth = vs.health; car.damage = vs.damage; car.isTank = vs.isTank;
 
-    carls = []; backpack = { medkits: 0, ammoPacks: 0, grenades: 0 };
+    carls = []; backpack = { medkits: 0, ammoPacks: 0, grenades: ws.grenades };
     bullets = []; zombies = []; pickups = []; towers = []; walls = []; gates = []; explosions = []; acidBalls = [];
     map = generateMap();
 
@@ -741,7 +754,12 @@ function startGameFromMenu() {
     var carSpawn = findSafeSpawn(5, 5);
     car.x = carSpawn.x; car.y = carSpawn.y;
 
-    document.querySelectorAll('.gun-slot').forEach(function(el, i) { el.className = i === 0 ? 'gun-slot active' : 'gun-slot'; });
+    var gunHtml = '';
+    for (var gi = 0; gi < playerGuns.length; gi++) {
+        var gg = guns[playerGuns[gi]];
+        gunHtml += '<span class="gun-slot' + (gi === 0 ? ' active' : '') + '">' + (gi + 1) + ':' + gg.name + '</span>';
+    }
+    document.getElementById('gun-row').innerHTML = gunHtml;
     document.querySelectorAll('.build-slot').forEach(function(el) {
         var dk = el.getAttribute('data-key');
         var locked = (dk === 'Y' && playerData.ownedUpgrades.indexOf('unlock_flame') < 0) ||

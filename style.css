@@ -3,16 +3,55 @@
 body {
     background: #000;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    height: 100vh;
-    overflow: hidden;
+    min-height: 100vh;
+    overflow: auto;
     font-family: 'Courier New', monospace;
 }
 
 #menu-canvas, #game-canvas {
     border: 3px solid #333;
     cursor: crosshair;
+    margin-top: 20px;
+}
+
+#game-info {
+    max-width: 760px;
+    color: #ddd;
+    background: #0a0a1e;
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin: 24px 20px 40px 20px;
+    line-height: 1.55;
+}
+
+#game-info h1 {
+    color: #feca57;
+    font-size: 28px;
+    margin-bottom: 12px;
+}
+
+#game-info h2 {
+    color: #e74c3c;
+    font-size: 20px;
+    margin: 18px 0 8px 0;
+}
+
+#game-info p {
+    margin-bottom: 10px;
+    font-size: 15px;
+}
+
+#game-info ul {
+    padding-left: 22px;
+    margin-bottom: 6px;
+}
+
+#game-info li {
+    margin-bottom: 6px;
+    font-size: 15px;
 }
 
 /* SHOP */
